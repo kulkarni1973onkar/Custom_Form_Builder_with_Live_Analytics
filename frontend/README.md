@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Form Builder Application  
 
-## Getting Started
+A dynamic, customizable **form builder application** built with **Next.js (frontend)** and **Go Fiber + MongoDB (backend)**. The project demonstrates full-stack skills by enabling users to:  
 
-First, run the development server:
+- Create forms with text, multiple choice, checkboxes, and rating fields.  
+- Save drafts and publish forms with a unique slug.  
+- Share forms publicly to collect responses.  
+- View **real-time analytics** of responses through a live dashboard.  
+
+---
+
+## Live Demo  
+
+- **Frontend (Next.js on Vercel):**  
+  [https://dune-security-assignment.vercel.app/forms/new](https://dune-security-assignment.vercel.app/forms/new)  
+
+- **Backend Health (Go Fiber on Render):**  
+  [https://dune-security-assignment-h89s.onrender.com/healthz](https://dune-security-assignment-h89s.onrender.com/healthz)  
+
+> ⚠️ Note: The backend API is running, but integration between frontend (Vercel) and backend (Render) is not fully stable due to deployment configuration and time constraints. Forms UI works, but some API calls may return intermittent errors.  
+
+---
+
+## 🛠️ Getting Started  
+
+### 1. Clone the repo  
 
 ```bash
+git clone https://github.com/<your-username>/dune-security-assignment.git
+cd dune-security-assignment
+
+2. Install dependencies
+npm install
+# or
+yarn install
+
+3. Run the frontend (Next.js)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Run the backend (Go Fiber)
+cd backend
+go run main.go
+Backend runs at http://localhost:8080.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+⚙️Environment Variables
+Create a .env.local file in the frontend root with:
+NEXT_PUBLIC_API_BASE=http://localhost:8080
+NEXT_PUBLIC_API_KEY=demo-key
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+For backend (.env):
+MONGO_URI=<your-mongodb-uri>
+ALLOWED_ORIGINS=http://localhost:3000,https://dune-security-assignment.vercel.app
+PORT=8080
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+📊 Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Form Builder UI – Add text, multiple choice, checkbox, rating fields.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Draft & Publish – Save drafts locally and publish with custom slug.
 
-## Deploy on Vercel
+Public Form Sharing – Access via unique /public/:slug link.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Responses – Users can submit responses stored in MongoDB.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Analytics Dashboard – Real-time analytics with in-memory pub/sub.
+
+
+3.2 Challenges
+
+Schema & Validation: strict field-level validation while keeping flexibility.
+
+Database Design: creating indexes for fast form retrieval + analytics.
+
+Real-Time Analytics: efficient pub/sub handling for live dashboards.
+
+API Contracts: syncing backend payloads with frontend expectations.
+
+CORS & Origins: cross-platform communication between Vercel & Render.
+
+Environment Variables: consistent handling across dev, Render, and Vercel.
+
+Deployment Issues: integration stable locally but intermittent in production.
+
+Time Constraints: some deployment issues remain unresolved despite best effort.
+
+
+📖 Documentation
+Setup locally: Follow steps above to run frontend + backend.
+
+Assumptions:
+
+Responses are anonymous.
+
+Basic pub/sub is in-memory (not Redis).
+
+Minimal error handling added due to time.
+
+How to test analytics:
+
+Open the form’s public URL in one tab.
+
+Submit responses.
+
+Watch analytics update live in another tab.
+
+
+📚 Learnings
+Gained experience in handling cross-platform deployments (Render + Vercel).
+
+Importance of consistent API contracts between frontend & backend.
+
+Trade-offs between time constraints and complete production stability.

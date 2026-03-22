@@ -19,12 +19,12 @@ A modern, full-stack form builder application featuring drag-and-drop form creat
 ```mermaid
 graph TD;
     Client((Client Browser))-->|HTTPS/WSS| Frontend[Vercel: Next.js + React Query]
-    Frontend-->|REST / WebSockets| API Server[Render.com: Go Fiber API]
-    API Server-->|Reads/Writes| MongoDB[(MongoDB Atlas)]
-    API Server-->|Caches read models| Redis[(Upstash Redis)]
-    API Server-->|Background Jobs| Worker[Goroutine Worker Pool]
-    Worker-->|LLM Inference| Ollama[Local Ollama instance]
-    Worker-->|Email Sender| Resend[Resend API]
+    Frontend-->|REST / WebSockets| API_Server["Render.com: Go Fiber API"]
+    API_Server-->|Reads/Writes| MongoDB[(MongoDB Atlas)]
+    API_Server-->|Caches read models| Redis[(Upstash Redis)]
+    API_Server-->|Background Jobs| Worker["Goroutine Worker Pool"]
+    Worker-->|LLM Inference| Ollama["Local Ollama instance"]
+    Worker-->|Email Sender| Resend["Resend API"]
 ```
 
 ## 🛠 Tech Stack

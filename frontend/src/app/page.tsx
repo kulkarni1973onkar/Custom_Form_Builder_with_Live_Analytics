@@ -11,16 +11,16 @@ export default function Home() {
         
         <div className="flex sm:flex-row flex-col gap-4 mt-8">
           <a
-            href="/dashboard"
+            href="/forms/new"
             className="flex items-center justify-center rounded-full bg-white text-black px-8 py-3 font-semibold transition-transform hover:scale-105"
           >
-            Go to Dashboard
+            Create New Form
           </a>
           <a
-            href="/register"
+            href="/forms/new"
             className="flex items-center justify-center rounded-full border border-neutral-800 bg-neutral-900 px-8 py-3 font-semibold text-white transition-colors hover:bg-neutral-800"
           >
-            Sign Up Free
+            Get Started
           </a>
         </div>
       </main>

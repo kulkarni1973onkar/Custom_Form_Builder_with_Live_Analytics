@@ -4,23 +4,20 @@ import Card from '@/components/UI/Card';
 import { FieldAnalytics } from '@/lib/types';
 
 export default function RatingsChart({
-  fields,
+  data,
 }: {
-  fields: FieldAnalytics[];
+  data: { score: string; count: number }[];
 }): React.ReactElement | null {
-  const rating = fields.filter((f) => f.type === 'rating') as Extract<FieldAnalytics, { type: 'rating' }>[];
-
-  if (rating.length === 0) return null;
+  if (!data || data.length === 0) return null;
 
   return (
-    <Card>
-      <h3 className="mb-3 text-sm font-semibold text-gray-800">Average Rating per Field</h3>
+    <div>
       <div className="grid gap-4 md:grid-cols-2">
-        {rating.map((f) => (
-          <Bar key={f.fieldId} label={f.fieldId} avg={f.avg} />
+        {data.map((d, i) => (
+          <Bar key={i} label={d.score} avg={d.count} />
         ))}
       </div>
-    </Card>
+    </div>
   );
 }
 

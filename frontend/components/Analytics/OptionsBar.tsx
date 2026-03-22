@@ -4,25 +4,44 @@ import Card from '@/components/UI/Card';
 import { FieldAnalytics } from '@/lib/types';
 
 export default function OptionsBar({
-  fields,
+  data,
 }: {
-  fields: FieldAnalytics[];
+  data: { label: string; count: number }[];
 }): React.ReactElement | null {
-  const optionFields = fields.filter(
-    (f) => f.type === 'multiple' || f.type === 'checkbox'
-  ) as Extract<FieldAnalytics, { type: 'multiple' | 'checkbox' }>[];
+  if (!data || data.length === 0) return null;
 
-  if (optionFields.length === 0) return null;
+  // Render a simple stacked bar for the given options
+  const total = data.reduce((s, d) => s + d.count, 0);
 
   return (
-    <Card>
-      <h3 className="mb-3 text-sm font-semibold text-gray-800">Option Distribution</h3>
-      <div className="space-y-4">
-        {optionFields.map((f) => (
-          <StackedBar key={f.fieldId} label={f.fieldId} parts={f.distribution} />
-        ))}
+    <div className="space-y-4">
+      <div>
+        <div className="mb-1 flex items-center justify-between text-xs text-gray-600">
+          <span className="truncate">Options</span>
+          <span>{total} selections</span>
+        </div>
+        <div className="flex h-4 w-full overflow-hidden rounded-full border">
+          {data.map((p, i) => {
+            const pct = total > 0 ? (p.count / total) * 100 : 0;
+            return (
+              <div
+                key={i}
+                className="h-full border-r last:border-r-0 bg-blue-500 opacity-80"
+                style={{ width: `${pct}%` }}
+                title={`${p.label}: ${p.count}`}
+              />
+            );
+          })}
+        </div>
+        <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-gray-600">
+          {data.map((p, i) => (
+            <span key={i} className="rounded border px-1.5 py-0.5 whitespace-nowrap">
+              {p.label} · {p.count}
+            </span>
+          ))}
+        </div>
       </div>
-    </Card>
+    </div>
   );
 }
 

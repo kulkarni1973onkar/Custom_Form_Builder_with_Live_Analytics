@@ -3,10 +3,15 @@
 package handlers
 
 import (
+	"errors"
+
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/kulkarni1973onkar/dune-security-assignment/backend/config"
+	"github.com/kulkarni1973onkar/dune-security-assignment/backend/models"
 )
 
 // DELETE /forms/:id
@@ -19,17 +24,28 @@ func DeleteForm(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "invalid id"})
 	}
 
-	// Delete the form document by _id.
-	result, err := formsCol.DeleteOne(c.Context(), bson.M{"_id": oid})
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "failed to delete form"})
+	userIdStr, ok := c.Locals("userId").(string)
+	if !ok {
+		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
 	}
-	if result.DeletedCount == 0 {
-		return c.Status(404).JSON(fiber.Map{"error": "form not found"})
+	ownerID, _ := primitive.ObjectIDFromHex(userIdStr)
+
+	// Delete the form document by _id and ownerId, fetching it to get the slug.
+	var form models.Form
+	err = formsCol.FindOneAndDelete(c.Context(), bson.M{"_id": oid, "ownerId": ownerID}).Decode(&form)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return fiber.NewError(fiber.StatusNotFound, "form not found or unauthorized")
+		}
+		return fiber.NewError(fiber.StatusInternalServerError, "failed to delete form")
+	}
+
+	if config.RedisClient != nil && form.Slug != "" {
+		config.RedisClient.Del(c.Context(), "form:slug:"+form.Slug)
 	}
 
 	if _, err := responsesCol.DeleteMany(c.Context(), bson.M{"formId": oid}); err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "form deleted, but failed to delete responses"})
+		return fiber.NewError(fiber.StatusInternalServerError, "form deleted, but failed to delete responses")
 	}
 
 	// No content returned on success.

@@ -4,12 +4,19 @@
 
 export type FieldType = 'text' | 'multiple' | 'checkbox' | 'rating';
 
+export type Condition = {
+  fieldId: string;
+  operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than';
+  value: string;
+};
+
 export type BaseField = {
   id: string;                 
   type: FieldType;
   label: string;
   required?: boolean;
   helpText?: string;
+  conditions?: Condition[];
 };
 
 export type TextField = BaseField & {

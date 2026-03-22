@@ -16,6 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/kulkarni1973onkar/dune-security-assignment/backend/models"
+	"github.com/kulkarni1973onkar/dune-security-assignment/backend/utils"
 )
 
 // POST /forms/:id/responses
@@ -44,6 +45,17 @@ func SubmitResponse(c *fiber.Ctx) error {
 		})
 	}
 
+	if form.CloseDate != nil && time.Now().After(*form.CloseDate) {
+		return c.Status(403).JSON(fiber.Map{"error": "form is closed (date passed)"})
+	}
+
+	if form.MaxResponses != nil {
+		count, err := respCol.CountDocuments(c.Context(), bson.M{"formId": formID})
+		if err == nil && count >= int64(*form.MaxResponses) {
+			return c.Status(403).JSON(fiber.Map{"error": "form is closed (max responses reached)"})
+		}
+	}
+
 	var answers map[string]interface{}
 	if err := c.BodyParser(&answers); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "invalid body"})
@@ -58,19 +70,44 @@ func SubmitResponse(c *fiber.Ctx) error {
 	}
 
 	//Save response
+	var answersArray []models.Answer
+	for fieldID, val := range answers {
+		// Only save if the field exists in the form? We can just save everything in the map.
+		answersArray = append(answersArray, models.Answer{
+			FieldID: fieldID,
+			Value:   val,
+		})
+	}
+
 	doc := models.Response{
 		FormID:      form.ID,
-		Answers:     answers,
+		Version:     form.Version,
+		Answers:     answersArray,
 		SubmittedAt: time.Now(),
 	}
 	res, err := respCol.InsertOne(c.Context(), doc)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "failed to save response"})
+		return fiber.NewError(fiber.StatusInternalServerError, "failed to save response")
 	}
 	if oid, ok := res.InsertedID.(primitive.ObjectID); ok {
 		doc.ID = oid
 	}
 	rtNotify(form.ID.Hex())
+
+	if form.WebhookURL != "" {
+		utils.SendWebhook(form.WebhookURL, answers)
+	}
+
+	// Send Email notification
+	usersCol := c.Locals("db").(*mongo.Database).Collection("users")
+	var user struct {
+		Email string `bson:"email"`
+	}
+	if err := usersCol.FindOne(c.Context(), bson.M{"_id": form.OwnerID}).Decode(&user); err == nil && user.Email != "" {
+		bodyHTML := fmt.Sprintf("<h2>New Response for %s</h2><p>You have received a new response.</p>", form.Title)
+		utils.SendEmail(user.Email, "New Form Submission: "+form.Title, bodyHTML)
+	}
+
 	return c.Status(201).JSON(doc)
 }
 

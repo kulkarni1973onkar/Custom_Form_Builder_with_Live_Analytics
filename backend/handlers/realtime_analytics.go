@@ -4,6 +4,7 @@ package handlers
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -38,7 +39,7 @@ func StreamAnalytics(c *fiber.Ctx) error {
 
 		// helper to run the same aggregations
 		sendAnalytics := func() error {
-			payload, err := computeAnalytics(c, respCol, formOID)
+			payload, err := computeAnalytics(c.Context(), respCol, formOID)
 			if err != nil {
 				// send minimal error event (optional)
 				fmt.Fprintf(w, "event: error\ndata: %q\n\n", err.Error())
@@ -71,8 +72,8 @@ func StreamAnalytics(c *fiber.Ctx) error {
 }
 
 // computeAnalytics mirrors handlers.FormAnalytics logic
-func computeAnalytics(c *fiber.Ctx, respCol *mongo.Collection, formID primitive.ObjectID) (map[string]interface{}, error) {
-	total, err := respCol.CountDocuments(c.Context(), bson.M{"formId": formID})
+func computeAnalytics(ctx context.Context, respCol *mongo.Collection, formID primitive.ObjectID) (map[string]interface{}, error) {
+	total, err := respCol.CountDocuments(ctx, bson.M{"formId": formID})
 	if err != nil {
 		return nil, err
 	}
@@ -92,12 +93,12 @@ func computeAnalytics(c *fiber.Ctx, respCol *mongo.Collection, formID primitive.
 			"count": bson.M{"$sum": 1},
 		}}},
 	}
-	cur, err := respCol.Aggregate(c.Context(), ratingPipeline)
+	cur, err := respCol.Aggregate(ctx, ratingPipeline)
 	if err != nil {
 		return nil, err
 	}
 	var ratings []bson.M
-	if err := cur.All(c.Context(), &ratings); err != nil {
+	if err := cur.All(ctx, &ratings); err != nil {
 		return nil, err
 	}
 
@@ -130,12 +131,12 @@ func computeAnalytics(c *fiber.Ctx, respCol *mongo.Collection, formID primitive.
 			"count": bson.M{"$sum": 1},
 		}}},
 	}
-	cur2, err := respCol.Aggregate(c.Context(), optionPipeline)
+	cur2, err := respCol.Aggregate(ctx, optionPipeline)
 	if err != nil {
 		return nil, err
 	}
 	var optionCounts []bson.M
-	if err := cur2.All(c.Context(), &optionCounts); err != nil {
+	if err := cur2.All(ctx, &optionCounts); err != nil {
 		return nil, err
 	}
 

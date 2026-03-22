@@ -7,13 +7,20 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// returns paginated forms filtered by status, sorted by last update.
+// ListForms returns paginated forms filtered by status, sorted by last update.
 func ListForms(c *fiber.Ctx) error {
 	col := c.Locals("forms").(*mongo.Collection)
+
+	userIdStr, ok := c.Locals("userId").(string)
+	if !ok {
+		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
+	}
+	ownerID, _ := primitive.ObjectIDFromHex(userIdStr)
 
 	// query params
 	status := c.Query("status", "")
@@ -30,7 +37,7 @@ func ListForms(c *fiber.Ctx) error {
 	}
 	skip := int64((page - 1) * limit)
 
-	filter := bson.M{}
+	filter := bson.M{"ownerId": ownerID}
 	if status != "" {
 		filter["status"] = status
 	}
@@ -42,16 +49,20 @@ func ListForms(c *fiber.Ctx) error {
 
 	cur, err := col.Find(c.Context(), filter, opts)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "failed to list forms"})
+		return fiber.NewError(fiber.StatusInternalServerError, "failed to list forms")
 	}
 	var out []bson.M
 	if err := cur.All(c.Context(), &out); err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "failed to read forms"})
+		return fiber.NewError(fiber.StatusInternalServerError, "failed to read forms")
 	}
 
 	total, err := col.CountDocuments(c.Context(), filter)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "failed to count forms"})
+		return fiber.NewError(fiber.StatusInternalServerError, "failed to count forms")
+	}
+
+	if out == nil {
+		out = make([]bson.M, 0)
 	}
 
 	return c.JSON(fiber.Map{

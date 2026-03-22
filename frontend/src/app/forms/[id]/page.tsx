@@ -16,13 +16,10 @@ import { Button } from '@/components/UI/Button';
 import {
   Edit3,
   Eye,
-  Share2,
   Copy,
   Code,
   ExternalLink,
   BarChart3,
-  Settings,
-  Save,
   Globe
 } from 'lucide-react';
 import Link from 'next/link';
@@ -54,7 +51,7 @@ export default function EditFormPage(): React.ReactElement {
     };
   }, [id, actions, push]);
 
-  const onSave = async (silent = false) => {
+  const onSave = React.useCallback(async (silent = false) => {
     if (saving) return;
 
     setSaving(true);
@@ -67,7 +64,7 @@ export default function EditFormPage(): React.ReactElement {
     } finally {
       setSaving(false);
     }
-  };
+  }, [saving, id, draft, push]);
 
   const onPublish = async () => {
     if (publishing) return;
@@ -93,7 +90,7 @@ export default function EditFormPage(): React.ReactElement {
     try {
       await navigator.clipboard.writeText(text);
       push('success', successMessage);
-    } catch (error) {
+    } catch {
       push('error', 'Failed to copy to clipboard');
     }
   };
@@ -112,7 +109,7 @@ export default function EditFormPage(): React.ReactElement {
     }, 2000);
 
     return () => clearTimeout(t);
-  }, [draft, loading]);
+  }, [draft, loading, onSave]);
 
   if (loading) {
     return (
@@ -273,7 +270,7 @@ export default function EditFormPage(): React.ReactElement {
                 <div className="max-h-[600px] overflow-auto border rounded-lg p-4 bg-muted/30">
                   <FormRenderer
                     schema={draft}
-                    onSubmit={async (answers: any) => {
+                    onSubmit={async (answers: Record<string, unknown>) => {
                       console.log('Preview submission:', answers);
                       push('success', 'Preview submission successful (not saved)');
                     }}

@@ -21,6 +21,7 @@ type Props = {
   onReorder: (from: number, to: number) => void;
   onSave: () => Promise<void> | void;
   onPublish: () => Promise<void> | void;
+  disabled?: boolean;
 };
 
 export default function BuilderShell({

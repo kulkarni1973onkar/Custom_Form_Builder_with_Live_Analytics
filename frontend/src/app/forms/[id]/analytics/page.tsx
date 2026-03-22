@@ -17,6 +17,8 @@ export default function AnalyticsPage() {
   const [schema, setSchema] = React.useState<FormSchema | null>(null);
   const [stats, setStats] = React.useState<any>(null); // The backend returns { totalResponses, ratings, optionCounts }
   const [loading, setLoading] = React.useState(true);
+  const [submitLoading, setSubmitLoading] = React.useState(false);
+  const [publishing, setPublishing] = React.useState(false);
   const [isConnected, setIsConnected] = React.useState(false);
 
   // Fetch form schema
@@ -45,8 +47,8 @@ export default function AnalyticsPage() {
     return () => ws.close();
   }, [id]);
 
-  if (!schema || loading === undefined /* just dummy loading check */) {
-    if (!schema) return <div className="p-4"><Skeleton className="h-10 w-full max-w-lg mb-4" /><Skeleton className="h-40 w-full" /></div>;
+  if (!schema || loading === undefined /* just dummy loading check */ || loading === undefined /* just dummy loading check */) {
+    if (!schema) if (!schema) return <div className="p-4"><Skeleton className="h-10 w-full max-w-lg mb-4" /><Skeleton className="h-40 w-full" /></div>;
   }
 
   const exportCSV = () => {

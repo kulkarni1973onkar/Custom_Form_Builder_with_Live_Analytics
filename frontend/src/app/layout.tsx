@@ -2,10 +2,10 @@ import './globals.css';
 import { ToastProvider } from '@/hooks/useToast';
 import Toasts from '@/components/UI/Toasts';
 import { Providers } from '@/components/Providers';
-import Header from '@/components/Header';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
+import ConditionalHeader from '@/components/ConditionalHeader';
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Providers>
             <ToastProvider>
               <div className="min-h-screen flex flex-col">
-                <Header />
+                <ConditionalHeader />
                 <main className="flex-1">
                   {children}
                 </main>

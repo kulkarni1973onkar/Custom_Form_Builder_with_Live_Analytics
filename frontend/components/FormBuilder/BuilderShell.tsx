@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import Card from '@/components/UI/Card';
-import Button from '@/components/UI/Button';
+import { Button } from '@/components/UI/Button';
 import Input from '@/components/UI/Input';
 import Switch from '@/components/UI/Switch';
 import { Field, FieldType, FormSchema, MultipleField, CheckboxField, RatingField, TextField } from '@/lib/types';
@@ -259,7 +259,7 @@ function FieldEditorRow({
                   arr[i].value = e.currentTarget.value;
                   onUpdate(field.id, { conditions: arr });
                 }} />
-                <Button variant="danger" size="sm" onClick={() => {
+                <Button variant="destructive" size="sm" onClick={() => {
                   const arr = field.conditions!.filter((_, idx) => idx !== i);
                   onUpdate(field.id, { conditions: arr });
                 }}>X</Button>
@@ -269,7 +269,7 @@ function FieldEditorRow({
         </div>
 
           <div>
-            <Button variant="danger" size="sm" onClick={() => onRemove(field.id)}>
+            <Button variant="destructive" size="sm" onClick={() => onRemove(field.id)}>
               Delete
             </Button>
           </div>
@@ -415,7 +415,7 @@ function OptionsEditor({
                 value={o.value}
                 onChange={(e) => update(o.id, { value: e.currentTarget.value })}
               />
-              <Button variant="danger" size="sm" onClick={() => remove(o.id)}>Delete</Button>
+              <Button variant="destructive" size="sm" onClick={() => remove(o.id)}>Delete</Button>
             </div>
           ))
         )}

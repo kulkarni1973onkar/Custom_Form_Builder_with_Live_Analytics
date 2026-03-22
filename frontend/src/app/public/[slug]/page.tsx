@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useParams } from 'next/navigation';
 import { usePublicForm } from '@/hooks/usePublicForm';
 import Card from '@/components/UI/Card';
-import Button from '@/components/UI/Button';
+import { Button } from '@/components/UI/Button';
 import Skeleton from '@/components/UI/Skeleton';
 import RenderField from '@/components/FormRenderer/RenderField';
 

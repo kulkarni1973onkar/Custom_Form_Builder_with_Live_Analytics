@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import Card from './Card';
-import Button from './Button';
+import { Button } from './Button';
 
 type EmptyStateProps = {
   title: string;

@@ -1,13 +1,14 @@
 'use client';
 import * as React from 'react';
 import Card from './Card';
-import Button from './Button';
+import { Button } from './Button';
 
 type EmptyStateProps = {
   title: string;
   description?: string;
   actionLabel?: string;
   onAction?: () => void;
+  icon?: React.ReactNode;
 };
 
 export default function EmptyState({
@@ -15,15 +16,21 @@ export default function EmptyState({
   description,
   actionLabel,
   onAction,
+  icon,
 }: EmptyStateProps) {
   return (
-    <Card className="flex flex-col items-center justify-center text-center py-12">
-      <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+    <Card className="flex flex-col items-center justify-center text-center py-16 px-8">
+      {icon && (
+        <div className="mb-4 text-muted-foreground">
+          {icon}
+        </div>
+      )}
+      <h3 className="text-xl font-semibold text-foreground mb-2">{title}</h3>
       {description && (
-        <p className="mt-1 max-w-md text-sm text-gray-600">{description}</p>
+        <p className="max-w-md text-sm text-muted-foreground mb-6">{description}</p>
       )}
       {actionLabel && onAction && (
-        <Button className="mt-4" onClick={onAction}>
+        <Button onClick={onAction}>
           {actionLabel}
         </Button>
       )}

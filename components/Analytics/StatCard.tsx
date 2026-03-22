@@ -12,12 +12,12 @@ export default function StatCard({
   hint?: string;
 }): React.ReactElement {
   return (
-    <Card className="flex items-center justify-between">
+    <Card className="border-2 border-slate-700 bg-slate-950/60 p-5 backdrop-blur-xl">
       <div>
-        <div className="text-sm text-gray-600">{label}</div>
-        <div className="text-2xl font-semibold text-gray-900">{value}</div>
+        <p className="text-xs uppercase tracking-widest text-slate-400">{label}</p>
+        <p className="text-3xl font-bold text-white mt-1">{value}</p>
+        {hint && <p className="text-xs text-slate-400 mt-1">{hint}</p>}
       </div>
-      {hint ? <div className="text-xs text-gray-500">{hint}</div> : null}
     </Card>
   );
 }

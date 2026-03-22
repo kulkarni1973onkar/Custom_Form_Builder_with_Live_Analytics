@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Field, CheckboxField } from '@/lib/types';
 import Input from '@/components/UI/Input';
-import Button from '@/components/UI/Button';
+import { Button } from '@/components/UI/Button';
 
 export default function CheckboxEditor({
   field,
@@ -60,7 +60,7 @@ function OptionsEditor({
                 value={o.value}
                 onChange={(e) => update(o.id, { value: e.currentTarget.value })}
               />
-              <Button variant="danger" size="sm" onClick={() => remove(o.id)}>
+              <Button variant="destructive" size="sm" onClick={() => remove(o.id)}>
                 Delete
               </Button>
             </div>

@@ -1,62 +1,48 @@
 'use client';
 import * as React from 'react';
-import Card from '@/components/UI/Card';
-import { FieldAnalytics } from '@/lib/types';
 
 export default function OptionsBar({
-  fields,
+  data,
 }: {
-  fields: FieldAnalytics[];
+  data: { label: string; count: number }[];
 }): React.ReactElement | null {
-  const optionFields = fields.filter(
-    (f) => f.type === 'multiple' || f.type === 'checkbox'
-  ) as Extract<FieldAnalytics, { type: 'multiple' | 'checkbox' }>[];
+  if (!data || data.length === 0) return null;
 
-  if (optionFields.length === 0) return null;
+  const total = data.reduce((s, d) => s + d.count, 0);
 
   return (
-    <Card>
-      <h3 className="mb-3 text-sm font-semibold text-gray-800">Option Distribution</h3>
-      <div className="space-y-4">
-        {optionFields.map((f) => (
-          <StackedBar key={f.fieldId} label={f.fieldId} parts={f.distribution} />
-        ))}
+    <div className="space-y-3">
+      <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-wider text-slate-400">
+        <span className="font-semibold">Options</span>
+        <span>{total} selections</span>
       </div>
-    </Card>
-  );
-}
 
-function StackedBar({
-  label,
-  parts,
-}: {
-  label: string;
-  parts: { optionId: string; count: number }[];
-}): React.ReactElement {
-  const total = parts.reduce((s, p) => s + p.count, 0);
-  return (
-    <div>
-      <div className="mb-1 flex items-center justify-between text-xs text-gray-600">
-        <span className="truncate">{label}</span>
-        <span>{total} responses</span>
-      </div>
-      <div className="flex h-4 w-full overflow-hidden rounded-full border">
-        {parts.map((p) => {
+      <div className="h-3 w-full overflow-hidden rounded-full bg-slate-900 border border-slate-700">
+        {data.map((p, i) => {
           const pct = total > 0 ? (p.count / total) * 100 : 0;
+          const colors = [
+            'from-cyan-500 to-blue-500',
+            'from-purple-500 to-fuchsia-500',
+            'from-emerald-500 to-teal-500',
+            'from-amber-500 to-orange-500',
+          ];
+          const gradient = colors[i % colors.length];
+
           return (
             <div
-              key={p.optionId}
-              className="h-full border-r last:border-r-0"
+              key={i}
+              className={`h-full bg-gradient-to-r ${gradient}`}
               style={{ width: `${pct}%` }}
-              title={`${p.optionId}: ${p.count}`}
+              title={`${p.label}: ${p.count}`}
             />
           );
         })}
       </div>
-      <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-gray-600">
-        {parts.map((p) => (
-          <span key={p.optionId} className="rounded border px-1.5 py-0.5">
-            {p.optionId} · {p.count}
+
+      <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+        {data.map((p, i) => (
+          <span key={i} className="rounded-lg border border-slate-700 bg-slate-900/40 px-2 py-1 text-slate-200">
+            <span className="font-semibold">{p.label}</span> {p.count}
           </span>
         ))}
       </div>

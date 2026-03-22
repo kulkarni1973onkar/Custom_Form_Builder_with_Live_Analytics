@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import Card from '@/components/UI/Card';
-import Button from '@/components/UI/Button';
+import { Button } from '@/components/UI/Button';
 
 type Props = {
   title?: string;
@@ -51,7 +51,7 @@ export default function FieldCard({
 
         {onDelete && (
           <div>
-            <Button variant="danger" size="sm" onClick={onDelete}>
+            <Button variant="destructive" size="sm" onClick={onDelete}>
               Delete
             </Button>
           </div>

@@ -1,12 +1,16 @@
 'use client';
 import * as React from 'react';
 import Card from '@/components/UI/Card';
-import Button from '@/components/UI/Button';
+import { Button } from '@/components/UI/Button';
 import Input from '@/components/UI/Input';
 import Switch from '@/components/UI/Switch';
 import { Field, FieldType, FormSchema, MultipleField, CheckboxField, RatingField, TextField } from '@/lib/types';
 import { validateSchema } from '@/lib/validators';
 import { useToast } from '@/hooks/useToast';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from 'lucide-react';
 
 type Props = {
   draft: FormSchema;
@@ -39,6 +43,20 @@ export default function BuilderShell({
     }
     void onSave();
     push('success', 'Draft saved');
+  }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = draft.fields.findIndex(f => f.id === active.id);
+      const newIndex = draft.fields.findIndex(f => f.id === over.id);
+      onReorder(oldIndex, newIndex);
+    }
   }
 
   function tryPublish() {
@@ -90,18 +108,20 @@ export default function BuilderShell({
         {draft.fields.length === 0 ? (
           <Card className="text-center py-10 text-gray-600">No fields yet. Add one on the right →</Card>
         ) : (
-          draft.fields.map((f, idx) => (
-            <FieldEditorRow
-              key={f.id}
-              field={f}
-              index={idx}
-              total={draft.fields.length}
-              onUpdate={onUpdate}
-              onRemove={onRemove}
-              onMoveUp={() => onReorder(idx, Math.max(0, idx - 1))}
-              onMoveDown={() => onReorder(idx, Math.min(draft.fields.length - 1, idx + 1))}
-            />
-          ))
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={draft.fields.map(f => f.id)} strategy={verticalListSortingStrategy}>
+              {draft.fields.map((f, idx) => (
+                <FieldEditorRow
+                  key={f.id}
+                  field={f}
+                  index={idx}
+                  total={draft.fields.length}
+                  onUpdate={onUpdate}
+                  onRemove={onRemove}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
         )}
 
         <div className="flex gap-2">
@@ -143,38 +163,37 @@ function FieldEditorRow({
   total,
   onUpdate,
   onRemove,
-  onMoveUp,
-  onMoveDown,
 }: {
   field: Field;
   index: number;
   total: number;
   onUpdate: (id: string, patch: Partial<Field>) => void;
   onRemove: (id: string) => void;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
+
 }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: field.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 1,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
   return (
-    <Card>
-      <div className="flex items-start gap-3">
-        <div className="flex flex-col">
-          <button
-            aria-label="Move up"
-            onClick={onMoveUp}
-            disabled={index === 0}
-            className="rounded-md border px-2 py-1 text-xs disabled:opacity-40"
-          >
-            ↑
-          </button>
-          <button
-            aria-label="Move down"
-            onClick={onMoveDown}
-            disabled={index === total - 1}
-            className="mt-1 rounded-md border px-2 py-1 text-xs disabled:opacity-40"
-          >
-            ↓
-          </button>
-        </div>
+    <div ref={setNodeRef} style={style}>
+      <Card>
+        <div className="flex items-start gap-3">
+          <div {...attributes} {...listeners} className="cursor-grab hover:text-gray-900 text-gray-400 mt-2">
+            <GripVertical size={20} />
+          </div>
 
         <div className="flex-1 space-y-3">
           <div className="grid gap-2">
@@ -205,15 +224,58 @@ function FieldEditorRow({
           {field.type === 'multiple' && <MultipleProps field={field} onUpdate={onUpdate} />}
           {field.type === 'checkbox' && <CheckboxProps field={field} onUpdate={onUpdate} />}
           {field.type === 'rating' && <RatingProps field={field} onUpdate={onUpdate} />}
+
+          {/* Conditions */}
+          <div className="pt-2 border-t mt-3">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-xs font-semibold text-gray-500 uppercase">Logic rules</span>
+              <Button size="sm" variant="outline" onClick={() => {
+                const arr = field.conditions ? [...field.conditions] : [];
+                arr.push({ fieldId: '', operator: 'equals', value: '' });
+                onUpdate(field.id, { conditions: arr });
+              }}>+ Add rule</Button>
+            </div>
+            {field.conditions?.map((c, i) => (
+              <div key={i} className="flex gap-2 items-center mb-2 text-sm">
+                <span>Show if</span>
+                <Input value={c.fieldId} placeholder="Field ID" onChange={(e) => {
+                  const arr = [...field.conditions!];
+                  arr[i].fieldId = e.currentTarget.value;
+                  onUpdate(field.id, { conditions: arr });
+                }} />
+                <select className="border rounded px-2 py-1 bg-background" value={c.operator} onChange={(e) => {
+                  const arr = [...field.conditions!];
+                  arr[i].operator = e.currentTarget.value as any;
+                  onUpdate(field.id, { conditions: arr });
+                }}>
+                  <option value="equals">==</option>
+                  <option value="not_equals">!=</option>
+                  <option value="contains">contains</option>
+                  <option value="greater_than">&gt;</option>
+                  <option value="less_than">&lt;</option>
+                </select>
+                <Input value={c.value} placeholder="Value" onChange={(e) => {
+                  const arr = [...field.conditions!];
+                  arr[i].value = e.currentTarget.value;
+                  onUpdate(field.id, { conditions: arr });
+                }} />
+                <Button variant="destructive" size="sm" onClick={() => {
+                  const arr = field.conditions!.filter((_, idx) => idx !== i);
+                  onUpdate(field.id, { conditions: arr });
+                }}>X</Button>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div>
-          <Button variant="danger" size="sm" onClick={() => onRemove(field.id)}>
-            Delete
-          </Button>
+          <div>
+            <Button variant="destructive" size="sm" onClick={() => onRemove(field.id)}>
+              Delete
+            </Button>
+          </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 }
 
@@ -353,7 +415,7 @@ function OptionsEditor({
                 value={o.value}
                 onChange={(e) => update(o.id, { value: e.currentTarget.value })}
               />
-              <Button variant="danger" size="sm" onClick={() => remove(o.id)}>Delete</Button>
+              <Button variant="destructive" size="sm" onClick={() => remove(o.id)}>Delete</Button>
             </div>
           ))
         )}

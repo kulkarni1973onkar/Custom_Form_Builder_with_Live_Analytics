@@ -22,19 +22,21 @@ import {
 import { useState, useEffect } from 'react';
 
 /* ─── tiny inline components so the file is self-contained ─── */
-function Button({ children, className = '', variant = 'primary', size = 'md', asChild, ...props }: { children?: React.ReactNode; className?: string; variant?: 'primary' | 'outline' | 'ghost' | 'gradient'; size?: 'sm' | 'md' | 'lg'; asChild?: boolean; [key: string]: any }) {
+type ButtonVariant = 'primary' | 'outline' | 'ghost' | 'gradient';
+type ButtonSize = 'sm' | 'md' | 'lg';
+type ColorKey = 'indigo' | 'amber' | 'emerald' | 'rose' | 'cyan' | 'violet';
+
+const BUTTON_SIZES: Record<ButtonSize, string> = { sm: 'h-9 px-4 text-sm', md: 'h-11 px-5 text-sm', lg: 'h-12 px-7 text-base' };
+const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
+  primary: 'bg-white text-slate-900 hover:bg-slate-100 shadow-lg shadow-white/10',
+  outline: 'border border-white/20 text-white hover:bg-white/8 backdrop-blur-sm',
+  ghost: 'text-slate-400 hover:text-white hover:bg-white/6',
+  gradient: 'bg-gradient-to-r from-indigo-500 via-purple-500 to-violet-500 text-white shadow-lg shadow-indigo-500/30 hover:opacity-90',
+};
+
+function Button({ children, className = '', variant = 'primary', size = 'md', asChild, ...props }: { children?: React.ReactNode; className?: string; variant?: ButtonVariant; size?: ButtonSize; asChild?: boolean; [key: string]: any }) {
   const base = 'inline-flex items-center justify-center font-semibold transition-all duration-200 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 disabled:opacity-50';
-  const sizes = { sm: 'h-9 px-4 text-sm', md: 'h-11 px-5 text-sm', lg: 'h-12 px-7 text-base' } as const;
-  const variants = {
-    primary:
-      'bg-white text-slate-900 hover:bg-slate-100 shadow-lg shadow-white/10',
-    outline:
-      'border border-white/20 text-white hover:bg-white/8 backdrop-blur-sm',
-    ghost: 'text-slate-400 hover:text-white hover:bg-white/6',
-    gradient:
-      'bg-gradient-to-r from-indigo-500 via-purple-500 to-violet-500 text-white shadow-lg shadow-indigo-500/30 hover:opacity-90',
-  } as const;
-  const cls = `${base} ${sizes[size as keyof typeof sizes]} ${variants[variant as keyof typeof variants]} ${className}`;
+  const cls = `${base} ${BUTTON_SIZES[size as ButtonSize]} ${BUTTON_VARIANTS[variant as ButtonVariant]} ${className}`;
 
   if (asChild && children) {
     const child = children as any;
@@ -91,7 +93,7 @@ const FEATURES = [
   },
 ];
 
-const COLOR_MAP = {
+const COLOR_MAP: Record<ColorKey, { bg: string; icon: string; ring: string }> = {
   indigo: { bg: 'bg-indigo-500/10', icon: 'text-indigo-400', ring: 'ring-indigo-500/20' },
   amber: { bg: 'bg-amber-500/10', icon: 'text-amber-400', ring: 'ring-amber-500/20' },
   emerald: { bg: 'bg-emerald-500/10', icon: 'text-emerald-400', ring: 'ring-emerald-500/20' },
@@ -378,7 +380,7 @@ export default function Home() {
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {FEATURES.map(({ icon: Icon, color, title, desc }) => {
-                const c = COLOR_MAP[color];
+                const c = COLOR_MAP[color as ColorKey];
                 return (
                   <div
                     key={title}

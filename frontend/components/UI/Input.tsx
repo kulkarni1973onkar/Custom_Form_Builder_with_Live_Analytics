@@ -1,5 +1,6 @@
 'use client';
 import * as React from 'react';
+import { cn } from '@/lib/utils';
 
 type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
@@ -8,23 +9,27 @@ type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
 };
 
 export default function Input({ label, hint, error, className = '', id, ...props }: InputProps) {
-  const generatedId = React.useId(); // always called
+  const generatedId = React.useId();
   const inputId = id || generatedId;
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-1.5">
       {label && (
-        <label htmlFor={inputId} className="mb-1 block text-sm font-medium text-gray-800">
+        <label htmlFor={inputId} className="block text-sm font-medium text-foreground">
           {label}
         </label>
       )}
       <input
         id={inputId}
-        className={`w-full rounded-xl border px-3 py-2 outline-none focus:ring focus:ring-gray-200 ${error ? 'border-red-500' : 'border-gray-300'} ${className}`}
+        className={cn(
+          "flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          error && "border-destructive focus-visible:ring-destructive",
+          className
+        )}
         {...props}
       />
-      {hint && !error && <p className="mt-1 text-xs text-gray-500">{hint}</p>}
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

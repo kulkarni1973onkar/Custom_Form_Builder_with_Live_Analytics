@@ -6,17 +6,40 @@ import { api } from '@/lib/api';
 import Card from '@/components/UI/Card';
 import { Button } from '@/components/UI/Button';
 import Skeleton from '@/components/UI/Skeleton';
-import { FormSchema, AnalyticsSnapshot, OptionCount } from '@/lib/types';
+import { FormSchema } from '@/lib/types';
 import RealtimeIndicator from '@/components/Analytics/RealtimeIndicator';
 import StatCard from '@/components/Analytics/StatCard';
 import RatingsChart from '@/components/Analytics/RatingsChart';
 import OptionsBar from '@/components/Analytics/OptionsBar';
 
+interface RatingData {
+  _id: string;
+  avg: number;
+}
+
+interface OptionCount {
+  _id: { fieldId: string; option: string };
+  count: number;
+}
+
+interface AnalyticsStats {
+  totalResponses: number;
+  ratings?: RatingData[];
+  optionCounts?: OptionCount[];
+}
+
+interface ResponseData {
+  submittedAt: string;
+  answers?: Array<{
+    fieldId: string;
+    value: string | string[];
+  }>;
+}
+
 export default function AnalyticsPage() {
   const { id } = useParams<{ id: string }>();
   const [schema, setSchema] = React.useState<FormSchema | null>(null);
-  const [stats, setStats] = React.useState<any>(null); // The backend returns { totalResponses, ratings, optionCounts }
-  const [loading, setLoading] = React.useState(true);
+  const [stats, setStats] = React.useState<AnalyticsStats | null>(null); // The backend returns { totalResponses, ratings, optionCounts }
   const [isConnected, setIsConnected] = React.useState(false);
 
   // Fetch form schema
@@ -45,8 +68,8 @@ export default function AnalyticsPage() {
     return () => ws.close();
   }, [id]);
 
-  if (!schema || loading === undefined /* just dummy loading check */) {
-    if (!schema) return <div className="p-4"><Skeleton className="h-10 w-full max-w-lg mb-4" /><Skeleton className="h-40 w-full" /></div>;
+  if (!schema) {
+    return <div className="p-4"><Skeleton className="h-10 w-full max-w-lg mb-4" /><Skeleton className="h-40 w-full" /></div>;
   }
 
   const exportCSV = () => {
@@ -60,17 +83,17 @@ export default function AnalyticsPage() {
         // Convert to CSV
         if (!data || !data.length) return alert("No responses to export.");
         const headers = ['Submitted At', ...schema.fields.map(f => f.label)];
-        const rows = data.map((res: any) => {
+        const rows = data.map((res: ResponseData) => {
           const row = [res.submittedAt];
           schema.fields.forEach(f => {
-            const ans = res.answers?.find((a: any) => a.fieldId === f.id);
+            const ans = res.answers?.find((a) => a.fieldId === f.id);
             row.push(ans ? (Array.isArray(ans.value) ? ans.value.join('; ') : String(ans.value)) : '');
           });
           return row;
         });
         
         const csvContent = "data:text/csv;charset=utf-8," 
-          + [headers.join(','), ...rows.map((r: any[]) => r.map(x => `"${String(x).replace(/"/g, '""')}"`).join(','))].join('\n');
+          + [headers.join(','), ...rows.map((r: string[]) => r.map(x => `"${String(x).replace(/"/g, '""')}"`).join(','))].join('\n');
         
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
@@ -104,7 +127,7 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
         {schema.fields.map(field => {
           if (field.type === 'rating') {
-            const hist = stats?.ratings?.find((r: any) => r._id === field.id);
+            const hist = stats?.ratings?.find((r: RatingData) => r._id === field.id);
             return (
               <Card key={field.id} className="p-4">
                 <h3 className="font-semibold mb-2">{field.label}</h3>
@@ -115,11 +138,11 @@ export default function AnalyticsPage() {
           }
           if (field.type === 'multiple' || field.type === 'checkbox') {
             const distribution = stats?.optionCounts
-              ?.filter((o: any) => o._id.fieldId === field.id)
-              .map((o: any) => ({ optionId: o._id.option, count: o.count })) || [];
+              ?.filter((o: OptionCount) => o._id.fieldId === field.id)
+              .map((o: OptionCount) => ({ optionId: o._id.option, count: o.count })) || [];
               
             // map optionId to label
-            const enrichedDist = distribution.map((d: any) => {
+            const enrichedDist = distribution.map((d) => {
               const opt = field.options.find(opt => opt.id === d.optionId || opt.value === d.optionId);
               return { label: opt ? opt.label : d.optionId, count: d.count };
             });

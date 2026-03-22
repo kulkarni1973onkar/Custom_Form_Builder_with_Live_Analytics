@@ -10,6 +10,14 @@ import OptionsBar from '@/components/Analytics/OptionsBar';
 import RealtimeIndicator from '@/components/Analytics/RealtimeIndicator';
 import OllamaPanel from '@/components/Analytics/OllamaPanel';
 
+interface FieldData {
+  fieldId: string;
+  label?: string;
+  type: string;
+  histogram?: Array<{ score: number; count: number }>;
+  distribution?: Array<{ optionId: string; count: number }>;
+}
+
 export default function AnalyticsPage(): React.ReactElement {
   const { id } = useParams<{ id: string }>();
   const { snapshot, status } = useAnalytics(id);
@@ -57,11 +65,11 @@ export default function AnalyticsPage(): React.ReactElement {
         <div className="xl:col-span-2 grid gap-4 md:grid-cols-2">
           {snapshot.fields
             .filter((f) => f.type === 'rating')
-            .map((f: any) => (
+            .map((f: FieldData) => (
               <Card key={f.fieldId} className="bg-slate-900/60 p-4 border border-slate-700">
                 <h3 className="mb-2 text-sm font-semibold text-slate-200">{f.label ?? f.fieldId}</h3>
                 <RatingsChart
-                  data={(f.histogram || []).map((h: any) => ({
+                  data={(f.histogram || []).map((h) => ({
                     score: String(h.score),
                     count: h.count,
                   }))}
@@ -71,11 +79,11 @@ export default function AnalyticsPage(): React.ReactElement {
 
           {snapshot.fields
             .filter((f) => f.type === 'multiple' || f.type === 'checkbox')
-            .map((f: any) => (
+            .map((f: FieldData) => (
               <Card key={f.fieldId} className="bg-slate-900/60 p-4 border border-slate-700">
                 <h3 className="mb-2 text-sm font-semibold text-slate-200">{f.label ?? f.fieldId}</h3>
                 <OptionsBar
-                  data={(f.distribution || []).map((d: any) => ({
+                  data={(f.distribution || []).map((d) => ({
                     label: d.optionId,
                     count: d.count,
                   }))}

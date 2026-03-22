@@ -71,7 +71,7 @@ export function validateAnswers(
           const re = new RegExp(tf.pattern);
           if (!re.test(s)) errors[f.id] = 'Invalid format';
         } catch {
-          
+          // Ignore invalid regex patterns
         }
       }
     }

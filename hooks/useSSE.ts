@@ -65,7 +65,7 @@ export function useSSE<T = unknown>(url: string | null, opts: UseSSEOptions<T>) 
           const data = JSON.parse(ev.data) as T;
           onMessageRef.current(data);
         } catch {
-          
+          // Ignore JSON parsing errors
         }
       };
 

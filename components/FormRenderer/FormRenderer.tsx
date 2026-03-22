@@ -10,13 +10,13 @@ export default function FormRenderer({
   onSubmit 
 }: { 
   schema: FormSchema; 
-  onSubmit?: (answers: Record<string, any>) => Promise<void>;
+  onSubmit?: (answers: Record<string, unknown>) => Promise<void>;
 }) {
-  const [answers, setAnswers] = React.useState<Map<string, any>>(new Map());
+  const [answers, setAnswers] = React.useState<Map<string, unknown>>(new Map());
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [submitting, setSubmitting] = React.useState(false);
 
-  const setAnswer = (id: string, value: any) => {
+  const setAnswer = (id: string, value: unknown) => {
     const next = new Map(answers);
     next.set(id, value);
     setAnswers(next);
@@ -32,7 +32,7 @@ export default function FormRenderer({
     if (onSubmit) {
       setSubmitting(true);
       try {
-        const payload: Record<string, any> = {};
+        const payload: Record<string, unknown> = {};
         for (const [k, v] of answers.entries()) {
           payload[k] = v;
         }

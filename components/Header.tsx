@@ -9,10 +9,8 @@ import {
   Home,
   Plus,
   FileText,
-  BarChart3,
   Menu,
-  X,
-  ChevronDown
+  X
 } from 'lucide-react';
 
 interface NavItem {

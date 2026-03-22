@@ -159,8 +159,8 @@ export default function BuilderShell({
 
 function FieldEditorRow({
   field,
-  index,
-  total,
+  index: _index,
+  total: _total,
   onUpdate,
   onRemove,
 }: {
@@ -245,7 +245,7 @@ function FieldEditorRow({
                 }} />
                 <select className="border rounded px-2 py-1 bg-background" value={c.operator} onChange={(e) => {
                   const arr = [...field.conditions!];
-                  arr[i].operator = e.currentTarget.value as any;
+                  arr[i].operator = e.currentTarget.value as 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than';
                   onUpdate(field.id, { conditions: arr });
                 }}>
                   <option value="equals">==</option>

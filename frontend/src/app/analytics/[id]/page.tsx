@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { useParams } from 'next/navigation';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import Card from '@/components/UI/Card';
 import Skeleton from '@/components/UI/Skeleton';
 import StatCard from '@/components/Analytics/StatCard';
 import RatingsChart from '@/components/Analytics/RatingsChart';
@@ -36,8 +37,34 @@ export default function AnalyticsPage(): React.ReactElement {
         />
       </div>
 
-      <RatingsChart fields={snapshot.fields} />
-      <OptionsBar fields={snapshot.fields} />
+      <div className="grid gap-4 md:grid-cols-2">
+        {snapshot.fields
+          .filter((f) => f.type === 'rating')
+          .map((f: any) => (
+            <Card key={f.fieldId} className="p-4">
+              <h3 className="mb-3 font-medium text-gray-700 text-sm">Field: {f.fieldId}</h3>
+              <RatingsChart
+                data={(f.histogram || []).map((h: any) => ({
+                  score: String(h.score),
+                  count: h.count,
+                }))}
+              />
+            </Card>
+          ))}
+        {snapshot.fields
+          .filter((f) => f.type === 'multiple' || f.type === 'checkbox')
+          .map((f: any) => (
+            <Card key={f.fieldId} className="p-4">
+              <h3 className="mb-3 font-medium text-gray-700 text-sm">Field: {f.fieldId}</h3>
+              <OptionsBar
+                data={(f.distribution || []).map((d: any) => ({
+                  label: d.optionId,
+                  count: d.count,
+                }))}
+              />
+            </Card>
+          ))}
+      </div>
     </div>
   );
 }

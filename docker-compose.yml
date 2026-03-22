@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: formbuilder-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: formbuilder-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  # Go Fiber Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: formbuilder-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - MONGO_URI=mongodb://mongodb:27017
+      - MONGO_DB=formbuilder
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=devsecret
+      - RESEND_API_KEY=${RESEND_API_KEY}
+    depends_on:
+      - mongodb
+      - redis
+    restart: unless-stopped
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: formbuilder-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  mongo_data:

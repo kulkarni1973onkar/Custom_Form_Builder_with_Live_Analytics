@@ -1,13 +1,32 @@
 services:
+  # Backend web service
   - type: web
-    name: dune-security-api
-    env: go
-    rootDir: backend
-    buildCommand: go build -o server .
-    startCommand: ./server
-    autoDeploy: true
+    name: custom-form-builder-api
+    env: docker
+    region: ohio
+    plan: free
+    branch: main
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    healthCheckPath: /health
     envVars:
-      - key: MONGODB_URI
+      - key: PORT
+        value: 8080
+      - key: MONGO_URI
         sync: false
-      - key: ALLOWED_ORIGINS
-        value: http://localhost:3000
+      - key: MONGO_DB
+        value: formbuilder_prod
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: RESEND_API_KEY
+        sync: false
+        
+  # Cron Job to prevent cold starts
+  - type: cron
+    name: custom-form-builder-ping
+    region: ohio
+    plan: free
+    schedule: "*/14 * * * *"
+    command: curl -s https://custom-form-builder-api.onrender.com/health || exit 1

@@ -1,7 +1,6 @@
 'use client';
 import * as React from 'react';
 import Card from '@/components/UI/Card';
-import { FieldAnalytics } from '@/lib/types';
 
 export default function RatingsChart({
   data,
@@ -11,29 +10,31 @@ export default function RatingsChart({
   if (!data || data.length === 0) return null;
 
   return (
-    <div>
-      <div className="grid gap-4 md:grid-cols-2">
+    <Card className="bg-slate-900/50 border border-slate-700 p-4">
+      <h4 className="mb-3 text-sm font-semibold text-slate-200">Rating Breakdown</h4>
+      <div className="grid gap-3">
         {data.map((d, i) => (
-          <Bar key={i} label={d.score} avg={d.count} />
+          <Bar key={i} label={d.score} value={d.count} />
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
 
-function Bar({ label, avg }: { label: string; avg: number }): React.ReactElement {
-  const percent = Math.max(0, Math.min(100, (avg / 5) * 100)); // assume max=5 for bar length; tooltip shows real avg
+function Bar({ label, value }: { label: string; value: number }): React.ReactElement {
+  const total = 5;
+  const pct = Math.min(100, (value / total) * 100);
+
   return (
-    <div>
-      <div className="mb-1 flex items-center justify-between text-xs text-gray-600">
-        <span className="truncate">{label}</span>
-        <span>{avg.toFixed(2)}</span>
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs text-slate-400">
+        <span>⭐ {label}</span>
+        <span>{value}</span>
       </div>
-      <div className="h-3 w-full rounded-full bg-gray-200">
+      <div className="h-2 w-full rounded-full bg-slate-800 overflow-hidden">
         <div
-          className="h-3 rounded-full bg-black transition-all"
-          style={{ width: `${percent}%` }}
-          title={`avg ${avg.toFixed(2)}`}
+          className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 transition-all"
+          style={{ width: `${pct}%` }}
         />
       </div>
     </div>

@@ -54,8 +54,8 @@ graph TD;
 
 ## 🔗 Live Demos
 
-**Frontend**: [Deployed on Vercel](https://your-vercel-app.vercel.app)  
-**Backend API**: [https://custom-form-builder-with-live-analytics-x03z.onrender.com](https://custom-form-builder-with-live-analytics-x03z.onrender.com)  
+**Frontend**: https://custom-form-builder-with-live-analy-nine.vercel.app/ 
+**Backend API**: https://custom-form-builder-with-live-analytics-x03z.onrender.com/healthz  
 **API Documentation**: [Swagger UI](https://custom-form-builder-with-live-analytics-x03z.onrender.com/docs)
 
 ## 🚀 Quick Start
@@ -92,9 +92,7 @@ graph TD;
    docker-compose up --build
    ```
 
-   - Frontend: http://localhost:3000
-   - Backend: http://localhost:8080
-   - API Docs: http://localhost:8080/docs
+   
 
 ### Manual Setup (Alternative)
 
@@ -188,4 +186,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Built with ❤️ using Next.js, Go Fiber, and modern web technologies.
+Built with Next.js, Go Fiber, and modern web technologies.
